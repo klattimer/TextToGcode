@@ -22,21 +22,31 @@ from math import cos, sin, radians
 
 class ttg:
     def __init__(self, text, size, rotation, method, feedRate):
+        """
+        Creates a new instance of the ttg class.
+
+        Args:
+            text (str): The text to be converted to GCODE.
+            size (int or float): The size of the text in mm.
+            rotation (int or float): The rotation of the text in degrees.
+            method (str): The return method, either "visualize", "return", or "file".
+            feedRate (int): The feed rate for the GCODE in mm/min.
+        """
         # validate input types
-        if type(text) != str:
-            raise Exception("TTG ERROR - passed text needs to be a string")
+        if not isinstance(text, str):
+            raise Exception("TTG ERROR - passed text must be a string")
 
-        if type(size) != int:
-            raise Exception("TTG ERROR - passed size needs to be a int")
+        if not isinstance(size, int) and not isinstance(size, float):
+            raise Exception("TTG ERROR - passed size must be an int or float")
 
-        if type(rotation) != int:
-            raise Exception("TTG ERROR - passed size rotation to be a int")
+        if not isinstance(rotation, int) and not isinstance(rotation, float):
+            raise Exception("TTG ERROR - passed rotation must be an int or float")
 
-        if type(method) != str:
-            raise Exception("TTG ERROR - passed return method needs to be a string")
+        if not isinstance(method, str):
+            raise Exception("TTG ERROR - passed return method must be a string")
 
-        if type(feedRate) != int:
-            raise Exception("TTG ERROR - passed feed rate needs to be a int")
+        if not isinstance(feedRate, int):
+            raise Exception("TTG ERROR - passed feed rate must be an int")
 
         # set basic passed args
         self.text = text
@@ -63,14 +73,16 @@ class ttg:
         if self.rotation != 0:
             self.rotationNeeded = True
 
+        self.scale = float(self.size) / 9.0
+
     def finalize(self):
         finalOperations = []
 
         for point in self.operations:
             if type(point) is tuple:
                 # if size is not 1mm scale the points, if it is do nothing
-                if self.size != 1:
-                    scaledPoint = (point[0] * self.size, point[1] * self.size)
+                if self.scale != 1:
+                    scaledPoint = (point[0] * self.scale, point[1] * self.scale)
                 else:
                     scaledPoint = (point[0], point[1])
 
@@ -159,7 +171,7 @@ class ttg:
                     lastMoveType = "slow"
                     pass
 
-                if type(command) == tuple:
+                if isinstance(command, tuple):
                     if lastMoveType == "slow":
                         currentCommand += self.slowCmd
                     elif lastMoveType == "fast":
